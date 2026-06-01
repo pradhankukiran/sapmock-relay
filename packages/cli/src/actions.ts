@@ -60,8 +60,8 @@ export async function replayCommand(
   return 0;
 }
 
-export async function serveCommand(projectDir: string, port: number): Promise<void> {
-  const app = await createServer({ projectDir: resolve(projectDir) });
+export async function serveCommand(projectDir: string, port: number, recordTarget?: string): Promise<void> {
+  const app = await createServer({ projectDir: resolve(projectDir), recordTarget });
   await app.listen({ port, host: "0.0.0.0" });
 }
 

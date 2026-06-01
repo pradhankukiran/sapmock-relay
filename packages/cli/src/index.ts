@@ -36,9 +36,10 @@ program
   .command("serve")
   .argument("<projectDir>", "SAPMock project directory")
   .option("-p, --port <port>", "HTTP port", "4000")
+  .option("--record-target <url>", "proxy target URL for record mode")
   .description("start local SAPMock Relay server")
-  .action(async (projectDir, options: { port: string }) => {
-    await serveCommand(projectDir, Number(options.port));
+  .action(async (projectDir, options: { port: string; recordTarget?: string }) => {
+    await serveCommand(projectDir, Number(options.port), options.recordTarget);
   });
 
 program

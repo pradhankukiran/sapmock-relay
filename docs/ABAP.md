@@ -29,3 +29,15 @@ zcl_sapmock_contract_assert=>assert_json_contains(
   iv_text = '"status":"OPEN"' ).
 ```
 
+Generate one ABAP Unit class per contract:
+
+```bash
+pnpm cli abap-tests examples/supplier-portal --out-dir tmp/abap-tests
+```
+
+Generated classes:
+
+- use `zcl_sapmock_http_client_double`
+- load scenario JSON as response payloads
+- assert required response fields from contract schemas
+- keep each contract in its own ABAP test class
