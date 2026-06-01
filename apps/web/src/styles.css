@@ -8,56 +8,116 @@ body {
   margin: 0;
 }
 
+.sapMPageBgStandard {
+  background: #f5f6f7;
+}
+
 .sapmockSummary {
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin: 0.25rem 0 0.75rem;
 }
 
 .sapmockMetric {
-  min-height: 6rem;
+  border: 1px solid #d9e2ec;
+  border-radius: 0.5rem;
+  box-shadow: none;
+  min-height: 4.6rem;
+}
+
+.sapmockMetric .sapMPanelContent {
+  padding: 0.75rem 1rem;
 }
 
 .sapmockMetricLabel {
   color: #556b82;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0;
+  margin-bottom: 0.2rem;
   text-transform: uppercase;
 }
 
-.sapmockWorkspace {
+.sapmockTabs {
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.sapmockTabs .sapMITBContent {
+  background: #ffffff;
+  border-bottom: 0;
+  padding: 1rem;
+}
+
+.sapmockWorkbench {
+  align-items: flex-start;
   gap: 1rem;
-  margin-bottom: 1rem;
+}
+
+.sapmockRunnerPanel {
+  flex: 1 1 48rem;
+  min-width: 28rem;
+}
+
+.sapmockRequestsPanel {
+  flex: 1 1 30rem;
+  min-width: 26rem;
+}
+
+.sapmockRunnerPanel .sapMPanelContent,
+.sapmockRequestsPanel .sapMPanelContent {
+  padding: 0.9rem 1rem;
 }
 
 .sapmockFormRow {
   gap: 1rem;
 }
 
+.sapmockTightRow {
+  margin-top: -0.25rem;
+}
+
 .sapmockField {
   gap: 0.25rem;
-  margin-bottom: 0.75rem;
-  min-width: 18rem;
+  margin-bottom: 0.65rem;
+  max-width: 100%;
 }
 
 .sapmockActions {
   align-items: center;
   gap: 0.75rem;
-  margin: 0.25rem 0 1rem;
+  margin: 0.1rem 0 0.75rem;
 }
 
 .sapmockResponse {
   gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .sapmockCodeBox textarea {
+  background: #111820;
+  color: #dce7f1;
   font-family: "72Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 0.8125rem;
 }
 
-@media (min-width: 72rem) {
-  .sapmockWorkspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+.sapMPanel {
+  border-radius: 0.5rem;
+}
+
+.sapMPanelHdr {
+  font-weight: 700;
+}
+
+.sapMListTblHeaderCell {
+  background: #f7f9fb;
+}
+
+@media (max-width: 64rem) {
+  .sapmockRunnerPanel,
+  .sapmockRequestsPanel {
+    flex-basis: 100%;
+    min-width: 0;
   }
 }

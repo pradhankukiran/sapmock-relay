@@ -53,6 +53,8 @@ async function boot() {
         "sap/m/ColumnListItem",
         "sap/m/ComboBox",
         "sap/m/HBox",
+        "sap/m/IconTabBar",
+        "sap/m/IconTabFilter",
         "sap/m/Input",
         "sap/m/Label",
         "sap/m/Link",
@@ -79,6 +81,8 @@ async function boot() {
           ColumnListItem,
           ComboBox,
           HBox,
+          IconTabBar,
+          IconTabFilter,
           Input,
           Label,
           Link,
@@ -105,6 +109,8 @@ async function boot() {
           ColumnListItem,
           ComboBox,
           HBox,
+          IconTabBar,
+          IconTabFilter,
           Input,
           Label,
           Link,
@@ -181,11 +187,43 @@ async function reloadData() {
 
 function render() {
   if (!state.data) return;
-  const { VBox } = controls;
+  const { IconTabBar, IconTabFilter } = controls;
   controls.root.removeAllItems();
   controls.root.addItem(summarySection());
-  controls.root.addItem(new VBox({ items: [requestRunner(), recentRequestsPanel()] }).addStyleClass("sapmockWorkspace"));
-  controls.root.addItem(new VBox({ items: [contractsPanel(), scenariosPanel()] }).addStyleClass("sapmockWorkspace"));
+  controls.root.addItem(
+    new IconTabBar({
+      expandable: false,
+      backgroundDesign: "Transparent",
+      items: [
+        new IconTabFilter({
+          key: "run",
+          text: "Run",
+          icon: "sap-icon://process",
+          content: [runnerWorkspace()],
+        }),
+        new IconTabFilter({
+          key: "requests",
+          text: "Requests",
+          icon: "sap-icon://activity-items",
+          content: [recentRequestsPanel()],
+        }),
+        new IconTabFilter({
+          key: "contracts",
+          text: "Contracts",
+          icon: "sap-icon://document-text",
+          count: String(state.data.contracts.length),
+          content: [contractsPanel()],
+        }),
+        new IconTabFilter({
+          key: "scenarios",
+          text: "Scenarios",
+          icon: "sap-icon://copy",
+          count: String(state.data.scenarios.length),
+          content: [scenariosPanel()],
+        }),
+      ],
+    }).addStyleClass("sapmockTabs"),
+  );
 }
 
 function renderError(message: string) {
@@ -235,6 +273,14 @@ function metric(label: string, value: string, state: string) {
       }),
     ],
   }).addStyleClass("sapmockMetric");
+}
+
+function runnerWorkspace() {
+  const { HBox } = controls;
+  return new HBox({
+    wrap: "Wrap",
+    items: [requestRunner(), recentRequestsPanel()],
+  }).addStyleClass("sapmockWorkbench");
 }
 
 function requestRunner() {
@@ -295,12 +341,14 @@ function requestRunner() {
   });
 
   const runnerItems = [
-    field("Contract", contractSelect),
-    field("Path", pathInput),
     new HBox({
       wrap: "Wrap",
-      items: [field("Scenario", scenarioSelect), field("Record ID", recordInput)],
+      items: [field("Contract", contractSelect, "35rem"), field("Path", pathInput, "35rem")],
     }).addStyleClass("sapmockFormRow"),
+    new HBox({
+      wrap: "Wrap",
+      items: [field("Scenario", scenarioSelect, "17rem"), field("Record ID", recordInput, "26rem")],
+    }).addStyleClass("sapmockFormRow sapmockTightRow"),
   ];
 
   if (contract && !["GET", "DELETE"].includes(contract.method)) {
@@ -336,11 +384,11 @@ function requestRunner() {
     headerText: "Request Runner",
     expandable: false,
     content: [new VBox({ items: runnerItems })],
-  }).addStyleClass("sapUiMediumMarginBottom");
+  }).addStyleClass("sapmockRunnerPanel");
 
-  function field(label: string, control: any) {
+  function field(label: string, control: any, width = "100%") {
     return new VBox({
-      width: "100%",
+      width,
       items: [new Label({ text: label }), control],
     }).addStyleClass("sapmockField");
   }
@@ -386,7 +434,7 @@ function recentRequestsPanel() {
   return new Panel({
     headerText: "Recent Requests",
     content: [requestsTable()],
-  }).addStyleClass("sapUiMediumMarginBottom");
+  }).addStyleClass("sapmockRequestsPanel");
 }
 
 function contractsTable() {
