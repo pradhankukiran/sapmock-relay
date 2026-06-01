@@ -1,3 +1,5 @@
+import type { ContractSpec, ScenarioSpec } from "@sapmock/core";
+
 export function configTemplate(name: string): string {
   return JSON.stringify(
     {
@@ -166,3 +168,98 @@ ENDCLASS.
 `;
 }
 
+export function abapContractTestTemplate(contract: ContractSpec, scenarios: ScenarioSpec[]): { className: string; source: string } {
+  const className = abapClassName(`zcl_smock_${contract.id}`);
+  const methods = scenarios.length > 0 ? scenarios.slice(0, 8).map((scenario) => abapMethodName(scenario.id)) : ["contract_has_no_scenario"];
+  const implementations =
+    scenarios.length > 0
+      ? scenarios
+          .slice(0, 8)
+          .map((scenario) => scenarioMethod(contract, scenario, abapMethodName(scenario.id)))
+          .join("\n")
+      : emptyScenarioMethod(contract);
+
+  const source = `CLASS ${className} DEFINITION
+  PUBLIC
+  FINAL
+  FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS.
+
+  PRIVATE SECTION.
+${methods.map((method) => `    METHODS ${method} FOR TESTING.`).join("\n")}
+ENDCLASS.
+
+CLASS ${className} IMPLEMENTATION.
+${implementations}
+ENDCLASS.
+`;
+
+  return { className, source };
+}
+
+function scenarioMethod(contract: ContractSpec, scenario: ScenarioSpec, methodName: string): string {
+  const requiredFields = requiredResponseFields(contract);
+  const assertions = requiredFields
+    .map(
+      (field) => `    zcl_sapmock_contract_assert=>assert_json_contains(
+      iv_json = lv_json
+      iv_text = ${abapString(`"${field}"`)} ).`,
+    )
+    .join("\n");
+
+  return `  METHOD ${methodName}.
+    DATA(lo_double) = NEW zcl_sapmock_http_client_double( ).
+    lo_double->add_response(
+      iv_method = ${abapString(contract.method)}
+      iv_path = ${abapString(samplePath(contract.path))}
+      iv_response = ${abapString(JSON.stringify(scenario.response))} ).
+
+    DATA(lv_json) = lo_double->zif_sapmock_backend_port~execute(
+      iv_method = ${abapString(contract.method)}
+      iv_path = ${abapString(samplePath(contract.path))} ).
+
+${assertions}
+  ENDMETHOD.
+`;
+}
+
+function emptyScenarioMethod(contract: ContractSpec): string {
+  return `  METHOD contract_has_no_scenario.
+    cl_abap_unit_assert=>fail( ${abapString(`No SAPMock scenario exists for ${contract.id}`)} ).
+  ENDMETHOD.
+`;
+}
+
+function requiredResponseFields(contract: ContractSpec): string[] {
+  const required = contract.responseSchema.required;
+  return Array.isArray(required) ? required.map(String).slice(0, 6) : [];
+}
+
+function samplePath(path: string): string {
+  return path
+    .split("/")
+    .map((part) => (part.startsWith(":") ? sampleValue(part.slice(1)) : part))
+    .join("/");
+}
+
+function sampleValue(name: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes("notification")) return "10000042";
+  if (lower.includes("po")) return "4500001234";
+  if (lower.includes("delivery")) return "1800007777";
+  return "TEST";
+}
+
+function abapClassName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 30);
+}
+
+function abapMethodName(value: string): string {
+  const name = value.toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 30);
+  return /^[a-z]/.test(name) ? name : `m_${name}`.slice(0, 30);
+}
+
+function abapString(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}

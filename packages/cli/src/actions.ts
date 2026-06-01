@@ -4,6 +4,7 @@ import { createServer } from "@sapmock/api";
 import { buildOpenApi, buildRelayResponse, loadProject, matchContract, pickScenario, verifyProject } from "@sapmock/core";
 import {
   abapHelperTemplate,
+  abapContractTestTemplate,
   configTemplate,
   poContractTemplate,
   qmContractTemplate,
@@ -80,4 +81,21 @@ export async function abapTestDoubleCommand(outFile: string, className: string):
   await mkdir(resolve(out, ".."), { recursive: true });
   await writeFile(out, abapHelperTemplate(className), "utf8");
   return out;
+}
+
+export async function abapContractTestsCommand(projectDir: string, outDir: string): Promise<string[]> {
+  const project = await loadProject(resolve(projectDir));
+  const target = resolve(outDir);
+  await mkdir(target, { recursive: true });
+
+  const files: string[] = [];
+  for (const contract of project.contracts) {
+    const scenarios = project.scenarios.filter((scenario) => scenario.contractId === contract.id);
+    const generated = abapContractTestTemplate(contract, scenarios);
+    const file = join(target, `${generated.className}.clas.testclasses.abap`);
+    await writeFile(file, generated.source, "utf8");
+    files.push(file);
+  }
+
+  return files;
 }

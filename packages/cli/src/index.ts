@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { abapTestDoubleCommand, initProject, openApiCommand, replayCommand, serveCommand, verifyCommand } from "./actions.js";
+import {
+  abapContractTestsCommand,
+  abapTestDoubleCommand,
+  initProject,
+  openApiCommand,
+  replayCommand,
+  serveCommand,
+  verifyCommand,
+} from "./actions.js";
 
 const program = new Command();
 
@@ -51,6 +59,16 @@ program
   .description("export contracts as OpenAPI 3.1")
   .action(async (projectDir, options: { out?: string }) => {
     process.exitCode = await openApiCommand(projectDir, options.out);
+  });
+
+program
+  .command("abap-tests")
+  .argument("<projectDir>", "SAPMock project directory")
+  .requiredOption("-o, --out-dir <dir>", "output directory for generated ABAP Unit classes")
+  .description("generate contract-specific ABAP Unit test classes")
+  .action(async (projectDir, options: { outDir: string }) => {
+    const files = await abapContractTestsCommand(projectDir, options.outDir);
+    for (const file of files) console.log(file);
   });
 
 program
