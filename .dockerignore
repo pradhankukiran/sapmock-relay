@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.git
+.github
+.turbo
+*.log
+apps/web/dist
+apps/web/dist-types
+apps/api/dist
+packages/*/dist
+
