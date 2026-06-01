@@ -98,6 +98,18 @@ describe("API relay", () => {
     expect(response.json()).toMatchObject({ error: "NO_CONTRACT_MATCH" });
   });
 
+  it("persists request and response bodies in the request log", async () => {
+    await app.inject({ method: "GET", url: "/qm/notifications/1001" });
+    const response = await app.inject({ method: "GET", url: "/api/requests" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()[0]).toMatchObject({
+      method: "GET",
+      path: "/qm/notifications/1001",
+      contractId: "qm-read",
+      responseBody: { notificationId: "1001" },
+    });
+  });
+
   it("validates request bodies before serving scenarios", async () => {
     const response = await app.inject({ method: "POST", url: "/qm/notifications", payload: {} });
     expect(response.statusCode).toBe(400);

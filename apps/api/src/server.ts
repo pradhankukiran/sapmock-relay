@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import cors from "@fastify/cors";
 import {
@@ -11,25 +11,17 @@ import {
   type LoadedProject,
 } from "@sapmock/core";
 import Fastify, { type FastifyInstance } from "fastify";
-
-export interface RequestLogEntry {
-  id: string;
-  at: string;
-  method: string;
-  path: string;
-  contractId?: string;
-  scenarioId?: string;
-  status: number;
-}
+import { RequestStore } from "./request-store.js";
 
 export interface CreateServerOptions {
   projectDir: string;
+  dbPath?: string;
   logger?: boolean;
 }
 
 export async function createServer(options: CreateServerOptions): Promise<FastifyInstance> {
   const app = Fastify({ logger: options.logger ?? true });
-  const requestLog: RequestLogEntry[] = [];
+  const requestStore = new RequestStore(options.dbPath ?? join(options.projectDir, ".sapmock", "requests.sqlite"));
   let project: LoadedProject = await loadProject(options.projectDir);
 
   await app.register(cors, { origin: true });
@@ -50,8 +42,9 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
 
   app.get("/api/contracts", async () => project.contracts);
   app.get("/api/scenarios", async () => project.scenarios);
-  app.get("/api/requests", async () => requestLog.slice(-100).reverse());
+  app.get("/api/requests", async () => requestStore.recent(100));
   app.get("/api/verify", async () => verifyProject(project));
+  app.addHook("onClose", async () => requestStore.close());
 
   app.route({
     method: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -61,33 +54,36 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
     const route = matchContract(project.contracts, request.method, url.pathname);
 
     if (!route) {
-      requestLog.push(logEntry(request.method, url.pathname, 404));
-      return reply.code(404).send({
+      const body = {
         error: "NO_CONTRACT_MATCH",
         message: `${request.method} ${url.pathname} does not match any SAPMock contract`,
-      });
+      };
+      requestStore.add(logInput(request.method, url.pathname, 404, request.body, body));
+      return reply.code(404).send(body);
     }
 
     const scenarioId = url.searchParams.get("scenario") ?? request.headers["x-sapmock-scenario"]?.toString();
     const validation = validateRequestBody(route.contract, request.body);
     if (!validation.ok) {
-      requestLog.push(logEntry(request.method, url.pathname, 400, route.contract.id));
-      return reply.code(400).send({
+      const body = {
         error: "REQUEST_SCHEMA_VALIDATION_FAILED",
         contractId: route.contract.id,
         issues: validation.errors,
-      });
+      };
+      requestStore.add(logInput(request.method, url.pathname, 400, request.body, body, route.contract.id));
+      return reply.code(400).send(body);
     }
 
     const scenario = pickScenario(project, route.contract, scenarioId);
 
     if (!scenario) {
-      requestLog.push(logEntry(request.method, url.pathname, 404, route.contract.id));
-      return reply.code(404).send({
+      const body = {
         error: "NO_SCENARIO_MATCH",
         contractId: route.contract.id,
         message: `No scenario available for contract ${route.contract.id}`,
-      });
+      };
+      requestStore.add(logInput(request.method, url.pathname, 404, request.body, body, route.contract.id));
+      return reply.code(404).send(body);
     }
 
     const relayResponse = buildRelayResponse(route.contract, scenario);
@@ -99,7 +95,17 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
       reply.header(key, value);
     }
 
-    requestLog.push(logEntry(request.method, url.pathname, relayResponse.status, route.contract.id, scenario.id));
+    requestStore.add(
+      logInput(
+        request.method,
+        url.pathname,
+        relayResponse.status,
+        request.body,
+        relayResponse.body,
+        route.contract.id,
+        scenario.id,
+      ),
+    );
     return reply.code(relayResponse.status).send(relayResponse.body);
     },
   });
@@ -107,20 +113,22 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
   return app;
 }
 
-function logEntry(
+function logInput(
   method: string,
   path: string,
   status: number,
+  requestBody?: unknown,
+  responseBody?: unknown,
   contractId?: string,
   scenarioId?: string,
-): RequestLogEntry {
+): Parameters<RequestStore["add"]>[0] {
   return {
-    id: randomUUID(),
-    at: new Date().toISOString(),
     method,
     path,
+    status,
+    requestBody,
+    responseBody,
     contractId,
     scenarioId,
-    status,
   };
 }
