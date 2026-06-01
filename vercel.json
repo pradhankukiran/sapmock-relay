@@ -1,0 +1,7 @@
+{
+  "buildCommand": "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @sapmock/web build",
+  "outputDirectory": "apps/web/dist",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "framework": "vite"
+}
+

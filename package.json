@@ -9,7 +9,11 @@
     "node": ">=22"
   },
   "scripts": {
+    "api:dev": "pnpm --filter @sapmock/api dev",
+    "api:start": "pnpm --filter @sapmock/api start",
     "build": "pnpm -r build",
+    "cli": "node packages/cli/dist/index.js",
+    "console:dev": "pnpm --filter @sapmock/web dev",
     "dev": "pnpm --filter @sapmock/api dev",
     "web": "pnpm --filter @sapmock/web dev",
     "lint": "pnpm -r lint",
@@ -32,4 +36,3 @@
     "vitest": "^4.0.14"
   }
 }
-
