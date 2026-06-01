@@ -7,6 +7,12 @@ import {
   type RequestLogEntry,
   type ScenarioSpec,
 } from "./api";
+import {
+  createJsonToAbapTab,
+  createSnapLogicTab,
+  createLaunchpadTab,
+  createOpenApiExplorerTab,
+} from "./tools";
 import "./styles.css";
 
 declare const sap: any;
@@ -72,6 +78,16 @@ async function boot() {
         "sap/m/VBox",
         "sap/ui/core/Item",
         "sap/ui/core/ListItem",
+        "sap/m/OverflowToolbar",
+        "sap/m/GenericTile",
+        "sap/m/TileContent",
+        "sap/m/NumericContent",
+        "sap/m/ObjectIdentifier",
+        "sap/ui/layout/cssgrid/CSSGrid",
+        "sap/ui/codeeditor/CodeEditor",
+        "sap/f/Card",
+        "sap/f/cards/Header",
+        "sap/ui/layout/form/SimpleForm",
       ],
       (...modules: any[]) => {
         const [
@@ -100,6 +116,16 @@ async function boot() {
           VBox,
           Item,
           ListItem,
+          OverflowToolbar,
+          GenericTile,
+          TileContent,
+          NumericContent,
+          ObjectIdentifier,
+          CSSGrid,
+          CodeEditor,
+          Card,
+          CardHeader,
+          SimpleForm,
         ] = modules;
 
         Object.assign(controls, {
@@ -128,6 +154,16 @@ async function boot() {
           VBox,
           Item,
           ListItem,
+          OverflowToolbar,
+          GenericTile,
+          TileContent,
+          NumericContent,
+          ObjectIdentifier,
+          CSSGrid,
+          CodeEditor,
+          Card,
+          CardHeader,
+          SimpleForm,
         });
 
         createShell();
@@ -138,19 +174,34 @@ async function boot() {
 }
 
 function createShell() {
-  const { App, Button, Page, Toolbar, ToolbarSpacer, Title, VBox } = controls;
+  const { App, Button, Page, VBox, OverflowToolbar, ToolbarSpacer, Title } = controls;
 
-  controls.root = new VBox({ width: "100%" }).addStyleClass("sapUiResponsiveContentPadding");
+  controls.root = new VBox({ width: "100%" }).addStyleClass("sapUiResponsiveContentPadding sapmockContainer");
+  
+  const refreshBtn = new Button({
+    icon: "sap-icon://refresh",
+    tooltip: "Refresh Data",
+    type: "Transparent",
+    press: () => void refreshData()
+  });
+
+  const reloadBtn = new Button({
+    icon: "sap-icon://synchronize",
+    text: "Reload Project",
+    type: "Transparent",
+    press: () => void reloadData()
+  });
+
   controls.page = new Page({
-    title: "SAPMock Relay",
     showHeader: true,
-    customHeader: new Toolbar({
+    customHeader: new OverflowToolbar({
       content: [
-        new Title({ text: "SAPMock Relay Integration Console", level: "H2" }),
+        new Title({ text: "SAPMock Relay", level: "H2" }).addStyleClass("sapUiTinyMarginBegin"),
+        new Title({ text: "Integration Console", level: "H5" }).addStyleClass("sapUiTinyMarginBegin sapUiMutedText"),
         new ToolbarSpacer(),
-        new Button({ icon: "sap-icon://refresh", tooltip: "Refresh", press: () => void refreshData() }),
-        new Button({ icon: "sap-icon://synchronize", text: "Reload Project", press: () => void reloadData() }),
-      ],
+        refreshBtn,
+        reloadBtn
+      ]
     }),
     content: [controls.root],
   });
@@ -185,45 +236,69 @@ async function reloadData() {
   }
 }
 
+function selectContractAndSwitchTab(contractId: string) {
+  selectContract(contractId);
+  controls.tabBar?.setSelectedKey("run");
+}
+
 function render() {
   if (!state.data) return;
   const { IconTabBar, IconTabFilter } = controls;
   controls.root.removeAllItems();
   controls.root.addItem(summarySection());
-  controls.root.addItem(
-    new IconTabBar({
-      expandable: false,
-      backgroundDesign: "Transparent",
-      items: [
-        new IconTabFilter({
-          key: "run",
-          text: "Run",
-          icon: "sap-icon://process",
-          content: [runnerWorkspace()],
-        }),
-        new IconTabFilter({
-          key: "requests",
-          text: "Requests",
-          icon: "sap-icon://activity-items",
-          content: [recentRequestsPanel()],
-        }),
-        new IconTabFilter({
-          key: "contracts",
-          text: "Contracts",
-          icon: "sap-icon://document-text",
-          count: String(state.data.contracts.length),
-          content: [contractsPanel()],
-        }),
-        new IconTabFilter({
-          key: "scenarios",
-          text: "Scenarios",
-          icon: "sap-icon://copy",
-          count: String(state.data.scenarios.length),
-          content: [scenariosPanel()],
-        }),
-      ],
-    }).addStyleClass("sapmockTabs"),
-  );
+  
+  const contractsCount = state.data.contracts.length;
+  const scenariosCount = state.data.scenarios.length;
+
+  controls.tabBar = new IconTabBar({
+    expandable: false,
+    backgroundDesign: "Transparent",
+    headerMode: "Inline", // Render tab elements on a single, clean horizontal line
+    items: [
+      new IconTabFilter({
+        key: "run",
+        text: "Request Runner",
+        content: [runnerWorkspace()],
+      }),
+      new IconTabFilter({
+        key: "requests",
+        text: "Recent Requests Log",
+        content: [recentRequestsPanel()],
+      }),
+      new IconTabFilter({
+        key: "contracts",
+        text: `API Contracts (${contractsCount})`,
+        content: [contractsPanel()],
+      }),
+      new IconTabFilter({
+        key: "scenarios",
+        text: `Mock Scenarios (${scenariosCount})`,
+        content: [scenariosPanel()],
+      }),
+      new IconTabFilter({
+        key: "jsonToAbap",
+        text: "JSON-to-ABAP Generator",
+        content: [createJsonToAbapTab(controls)],
+      }),
+      new IconTabFilter({
+        key: "snaplogic",
+        text: "SnapLogic Mapper",
+        content: [createSnapLogicTab(controls, state.data)],
+      }),
+      new IconTabFilter({
+        key: "launchpad",
+        text: "Launchpad Tile Designer",
+        content: [createLaunchpadTab(controls)],
+      }),
+      new IconTabFilter({
+        key: "openapiExplorer",
+        text: "OpenAPI Explorer",
+        content: [createOpenApiExplorerTab(controls, state.data, selectContractAndSwitchTab)],
+      }),
+    ],
+  }).addStyleClass("sapmockTabs sapUiMediumMarginTop");
+
+  controls.root.addItem(controls.tabBar);
 }
 
 function renderError(message: string) {
@@ -233,53 +308,74 @@ function renderError(message: string) {
 }
 
 function summarySection() {
-  const { HBox, ObjectStatus, Panel, Text, VBox } = controls;
+  const { HBox, GenericTile, TileContent, NumericContent, Text } = controls;
   const data = requireData();
+
+  const apiTile = new GenericTile({
+    header: "API Base Endpoint",
+    subheader: data.apiBase.replace(/^https?:\/\//, ""),
+    frameType: "TwoByOne",
+    tileContent: [
+      new TileContent({
+        content: new Text({ text: "ACTIVE" }).addStyleClass("sapmockTileText sapUiTinyMarginTop")
+      })
+    ]
+  }).addStyleClass("sapUiTinyMarginEnd sapUiTinyMarginBottom");
+
+  const contractsTile = new GenericTile({
+    header: "Contracts",
+    subheader: "Active specifications",
+    frameType: "OneByOne",
+    tileContent: [
+      new TileContent({
+        content: new NumericContent({
+          value: String(data.project.contractCount),
+          icon: "sap-icon://document-text",
+          valueColor: "Neutral"
+        })
+      })
+    ]
+  }).addStyleClass("sapUiTinyMarginEnd sapUiTinyMarginBottom");
+
+  const scenariosTile = new GenericTile({
+    header: "Scenarios",
+    subheader: "Mocked routes",
+    frameType: "OneByOne",
+    tileContent: [
+      new TileContent({
+        content: new NumericContent({
+          value: String(data.project.scenarioCount),
+          icon: "sap-icon://copy",
+          valueColor: "Neutral"
+        })
+      })
+    ]
+  }).addStyleClass("sapUiTinyMarginEnd sapUiTinyMarginBottom");
+
+  const verificationTile = new GenericTile({
+    header: "Verification",
+    subheader: data.verification.ok ? "All contracts verified" : "Issues detected",
+    frameType: "OneByOne",
+    tileContent: [
+      new TileContent({
+        content: new Text({ 
+          text: data.verification.ok ? "PASSED" : "FAILED" 
+        }).addStyleClass(data.verification.ok ? "sapmockTileTextPass sapUiTinyMarginTop" : "sapmockTileTextFail sapUiTinyMarginTop")
+      })
+    ]
+  }).addStyleClass("sapUiTinyMarginBottom");
+
   return new HBox({
     wrap: "Wrap",
-    items: [
-      metric("API", data.apiBase, "Information"),
-      metric("Contracts", String(data.project.contractCount), "Information"),
-      metric("Scenarios", String(data.project.scenarioCount), "Information"),
-      new Panel({
-        width: "18rem",
-        content: [
-          new VBox({
-            items: [
-              new Text({ text: "Verification" }).addStyleClass("sapmockMetricLabel"),
-              new ObjectStatus({
-                text: data.verification.ok ? "PASS" : "FAIL",
-                state: data.verification.ok ? "Success" : "Error",
-                icon: data.verification.ok ? "sap-icon://sys-enter-2" : "sap-icon://error",
-              }),
-            ],
-          }),
-        ],
-      }).addStyleClass("sapmockMetric"),
-    ],
+    items: [apiTile, contractsTile, scenariosTile, verificationTile]
   }).addStyleClass("sapmockSummary");
 }
 
-function metric(label: string, value: string, state: string) {
-  const { ObjectStatus, Panel, Text, VBox } = controls;
-  return new Panel({
-    width: "18rem",
-    content: [
-      new VBox({
-        items: [
-          new Text({ text: label }).addStyleClass("sapmockMetricLabel"),
-          new ObjectStatus({ text: value, state }),
-        ],
-      }),
-    ],
-  }).addStyleClass("sapmockMetric");
-}
-
 function runnerWorkspace() {
-  const { HBox } = controls;
-  return new HBox({
-    wrap: "Wrap",
-    items: [requestRunner(), recentRequestsPanel()],
+  const { VBox } = controls;
+  return new VBox({
+    width: "100%",
+    items: [requestRunner(), recentRequestsPanel()]
   }).addStyleClass("sapmockWorkbench");
 }
 
@@ -291,9 +387,10 @@ function requestRunner() {
     Input,
     Label,
     Link,
-    Panel,
+    Card,
+    CardHeader,
     Select,
-    TextArea,
+    CodeEditor,
     VBox,
     Item,
   } = controls;
@@ -334,125 +431,159 @@ function requestRunner() {
 
   const recordInput = new Input({
     value: state.recordId,
-    placeholder: "optional",
+    placeholder: "Optional record ID",
     liveChange: (event: any) => {
       state.recordId = event.getParameter("value");
     },
   });
 
-  const runnerItems = [
-    new HBox({
-      wrap: "Wrap",
-      items: [field("Contract", contractSelect, "35rem"), field("Path", pathInput, "35rem")],
-    }).addStyleClass("sapmockFormRow"),
-    new HBox({
-      wrap: "Wrap",
-      items: [field("Scenario", scenarioSelect, "17rem"), field("Record ID", recordInput, "26rem")],
-    }).addStyleClass("sapmockFormRow sapmockTightRow"),
-  ];
+  // Helper to build label-control vertical stacks cleanly
+  function field(labelText: string, control: any) {
+    return new VBox({
+      width: "100%",
+      items: [
+        new Label({ text: labelText }),
+        control
+      ]
+    }).addStyleClass("sapmockField");
+  }
+
+  // Modern CSS Grid for form layout
+  const formGrid = new HBox({
+    width: "100%",
+    items: [
+      field("Contract Specification", contractSelect),
+      field("Request Path", pathInput),
+      field("Scenario Mock", scenarioSelect),
+      field("Record ID", recordInput)
+    ]
+  }).addStyleClass("sapmockFormGrid");
+
+  const runnerItems = [formGrid];
 
   if (contract && !["GET", "DELETE"].includes(contract.method)) {
     runnerItems.push(
-      field(
-        "JSON Body",
-        new TextArea({
-          value: state.body,
-          width: "100%",
-          rows: 7,
-          liveChange: (event: any) => {
-            state.body = event.getParameter("value");
-          },
-        }),
-      ),
+      new VBox({
+        width: "100%",
+        items: [
+          new Label({ text: "JSON Request Body" }).addStyleClass("sapUiSmallMarginTop sapUiTinyMarginBottom"),
+          new CodeEditor({
+            value: state.body,
+            type: "json",
+            width: "100%",
+            height: "180px",
+            change: (event: any) => {
+              state.body = event.getSource().getValue();
+            },
+          }),
+        ]
+      })
     );
   }
 
   runnerItems.push(
     new HBox({
+      alignItems: "Center",
+      justifyContent: "SpaceBetween",
       items: [
-        new Button({ text: "Run", icon: "sap-icon://media-play", type: "Emphasized", press: () => void runRequest() }),
-        new Link({ text: "OpenAPI", href: `${data.apiBase}/api/openapi.json`, target: "_blank" }),
+        new Button({ text: "Execute Request", icon: "sap-icon://media-play", type: "Emphasized", press: () => void runRequest() }),
+        new Link({ text: "View OpenAPI Specification", href: `${data.apiBase}/api/openapi.json`, target: "_blank" }),
       ],
-    }).addStyleClass("sapmockActions"),
+    }).addStyleClass("sapmockActions sapUiSmallMarginTop"),
   );
 
   if (state.result) {
     runnerItems.push(responsePanel(state.result));
   }
 
-  return new Panel({
-    headerText: "Request Runner",
-    expandable: false,
-    content: [new VBox({ items: runnerItems })],
+  return new Card({
+    header: new CardHeader({
+      title: "Mock Request Runner",
+      subtitle: "Execute mock REST requests to verify schemas",
+      iconSrc: "sap-icon://process"
+    }),
+    content: new VBox({
+      items: runnerItems
+    }).addStyleClass("sapUiContentPadding")
   }).addStyleClass("sapmockRunnerPanel");
-
-  function field(label: string, control: any, width = "100%") {
-    return new VBox({
-      width,
-      items: [new Label({ text: label }), control],
-    }).addStyleClass("sapmockField");
-  }
 }
 
 function responsePanel(result: ExecuteRequestResult) {
-  const { ObjectStatus, TextArea, VBox } = controls;
+  const { ObjectStatus, CodeEditor, VBox, Label } = controls;
   return new VBox({
+    width: "100%",
     items: [
       new ObjectStatus({
-        title: "Status",
+        title: "HTTP Status Response",
         text: String(result.status),
         state: result.status >= 400 ? "Error" : "Success",
-      }),
-      new TextArea({
+      }).addStyleClass("sapUiSmallMarginBottom"),
+      new Label({ text: "JSON Response Payload" }).addStyleClass("sapUiTinyMarginBottom"),
+      new CodeEditor({
         width: "100%",
-        rows: 12,
+        height: "280px",
+        type: "json",
         editable: false,
         value: JSON.stringify(result.body, null, 2),
-      }).addStyleClass("sapmockCodeBox"),
+      })
     ],
   }).addStyleClass("sapmockResponse");
 }
 
 function contractsPanel() {
-  const { Panel } = controls;
-  return new Panel({
-    headerText: "Contracts",
-    content: [contractsTable()],
+  const { Card, CardHeader } = controls;
+  return new Card({
+    header: new CardHeader({
+      title: "API Contracts Catalog",
+      subtitle: "Active contract specifications mapping to SAP backends",
+      iconSrc: "sap-icon://document-text"
+    }),
+    content: contractsTable(),
   });
 }
 
 function scenariosPanel() {
-  const { Panel } = controls;
-  return new Panel({
-    headerText: "Scenarios",
-    content: [scenariosTable()],
+  const { Card, CardHeader } = controls;
+  return new Card({
+    header: new CardHeader({
+      title: "Mock Scenarios Configuration",
+      subtitle: "Predefined success/failure mock returns",
+      iconSrc: "sap-icon://copy"
+    }),
+    content: scenariosTable(),
   });
 }
 
 function recentRequestsPanel() {
-  const { Panel } = controls;
-  return new Panel({
-    headerText: "Recent Requests",
-    content: [requestsTable()],
+  const { Card, CardHeader } = controls;
+  return new Card({
+    header: new CardHeader({
+      title: "Recent Requests Log",
+      subtitle: "List of recently processed transactions through mock proxy",
+      iconSrc: "sap-icon://activity-items"
+    }),
+    content: requestsTable(),
   }).addStyleClass("sapmockRequestsPanel");
 }
 
 function contractsTable() {
-  const { Column, ColumnListItem, ObjectStatus, Table, Text } = controls;
+  const { Column, ColumnListItem, ObjectStatus, Table, Text, ObjectIdentifier } = controls;
   const table = new Table({
+    alternateRowColors: true,
     columns: [
-      new Column({ header: new Text({ text: "Method" }) }),
-      new Column({ header: new Text({ text: "Path" }) }),
-      new Column({ header: new Text({ text: "System" }) }),
+      new Column({ header: new Text({ text: "Method" }), width: "6rem" }),
+      new Column({ header: new Text({ text: "Endpoint / Details" }) }),
+      new Column({ header: new Text({ text: "Target System" }), width: "10rem" }),
     ],
   });
   requireData().contracts.forEach((contract) => {
     table.addItem(
       new ColumnListItem({
+        vAlign: "Middle",
         cells: [
           new ObjectStatus({ text: contract.method, state: methodState(contract.method) }),
-          new Text({ text: `${contract.path}\n${contract.summary}` }),
-          new ObjectStatus({ text: contract.system, state: "Information" }),
+          new ObjectIdentifier({ title: contract.path, text: contract.summary }),
+          new ObjectStatus({ text: contract.system, state: "None" }),
         ],
       }),
     );
@@ -461,19 +592,21 @@ function contractsTable() {
 }
 
 function scenariosTable() {
-  const { Column, ColumnListItem, ObjectStatus, Table, Text } = controls;
+  const { Column, ColumnListItem, ObjectStatus, Table, Text, ObjectIdentifier } = controls;
   const table = new Table({
+    alternateRowColors: true,
     columns: [
-      new Column({ header: new Text({ text: "Scenario" }) }),
-      new Column({ header: new Text({ text: "Contract" }) }),
-      new Column({ header: new Text({ text: "Status" }) }),
+      new Column({ header: new Text({ text: "Scenario ID / Description" }) }),
+      new Column({ header: new Text({ text: "Contract ID" }), width: "20rem" }),
+      new Column({ header: new Text({ text: "Response Status" }), width: "10rem" }),
     ],
   });
   requireData().scenarios.forEach((scenario) => {
     table.addItem(
       new ColumnListItem({
+        vAlign: "Middle",
         cells: [
-          new Text({ text: `${scenario.id}\n${scenario.name}` }),
+          new ObjectIdentifier({ title: scenario.id, text: scenario.name }),
           new Text({ text: scenario.contractId }),
           new ObjectStatus({ text: String(scenario.status), state: scenario.status >= 400 ? "Error" : "Success" }),
         ],
@@ -484,21 +617,23 @@ function scenariosTable() {
 }
 
 function requestsTable() {
-  const { Column, ColumnListItem, ObjectStatus, Table, Text } = controls;
+  const { Column, ColumnListItem, ObjectStatus, Table, Text, ObjectIdentifier } = controls;
   const table = new Table({
+    alternateRowColors: true,
     columns: [
-      new Column({ header: new Text({ text: "Status" }) }),
-      new Column({ header: new Text({ text: "Method" }) }),
-      new Column({ header: new Text({ text: "Path" }) }),
+      new Column({ header: new Text({ text: "Status" }), width: "6rem" }),
+      new Column({ header: new Text({ text: "Method" }), width: "6rem" }),
+      new Column({ header: new Text({ text: "Path / Match" }) }),
     ],
   });
   requireData().requests.forEach((request) => {
     table.addItem(
       new ColumnListItem({
+        vAlign: "Middle",
         cells: [
           new ObjectStatus({ text: String(request.status), state: request.status >= 400 ? "Error" : "Success" }),
           new ObjectStatus({ text: request.method, state: methodState(request.method) }),
-          new Text({ text: `${request.path}\n${request.contractId ?? "unmatched"}` }),
+          new ObjectIdentifier({ title: request.path, text: request.contractId ?? "unmatched" }),
         ],
       }),
     );

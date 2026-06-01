@@ -4,11 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAPMock Relay Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Force Inter font family globally across all UI5 and standard components */
+      html, body, #content, .sapUiBody, .sapMText, .sapMTitle, .sapMLabel, .sapMButton, .sapMInputBase, .sapMTable, .sapMList, .sapMPanel, .sapFCard, .sapMITBFilter {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      }
+    </style>
     <script
       id="sap-ui-bootstrap"
       src="https://sdk.openui5.org/resources/sap-ui-core.js"
       data-sap-ui-theme="sap_horizon"
-      data-sap-ui-libs="sap.m,sap.f,sap.ui.layout"
+      data-sap-ui-libs="sap.m,sap.f,sap.ui.layout,sap.ui.codeeditor"
       data-sap-ui-compat-version="edge"
       data-sap-ui-async="true"
       data-sap-ui-frame-options="trusted"
