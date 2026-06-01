@@ -12,6 +12,7 @@ SAPMock Relay gives teams:
 - OpenAPI 3.1 export
 - ABAP Unit helper generation for API wrapper tests
 - deployable API server for Railway and SAPUI5/OpenUI5 Fiori-style console for Vercel
+- supplier-facing Fiori demo workflow for PO confirmation, QM supplier response, and EWM delivery tracking
 - built-in interactive Fiori Horizon-themed integration utilities:
   - **JSON-to-ABAP Generator:** Auto-maps JSON payloads directly to recursive ABAP structure declarations (`TYPES: BEGIN OF...`) and `/UI2/CL_JSON=>deserialize` parsing blocks.
   - **SnapLogic Mapper:** Generates property mapping expression blocks linking REST fields to standard BAPI fields.
@@ -43,6 +44,13 @@ Open:
 - Failure sample: `http://localhost:4000/qm/notifications/10000042?scenario=bapi-error`
 - OpenAPI: `http://localhost:4000/api/openapi.json`
 - Console: `http://localhost:5173`
+
+Open the **Supplier Portal Demo** tab to try a Fiori-style supplier workflow backed by the mock REST contracts:
+
+- review MM purchase order lines and submit supplier confirmations
+- read QM notifications and submit root cause/corrective action responses
+- track EWM inbound delivery and goods receipt status
+- inspect the live relay response returned by the no-OData integration layer
 
 ## Shape
 

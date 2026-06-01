@@ -13,6 +13,7 @@ import {
   createLaunchpadTab,
   createOpenApiExplorerTab,
 } from "./tools";
+import { createSupplierPortalTab } from "./supplier-portal";
 import "./styles.css";
 
 declare const sap: any;
@@ -274,6 +275,11 @@ function render() {
         key: "scenarios",
         text: `Mock Scenarios (${scenariosCount})`,
         content: [scenariosPanel()],
+      }),
+      new IconTabFilter({
+        key: "supplierPortal",
+        text: "Supplier Portal Demo",
+        content: [createSupplierPortalTab(controls)],
       }),
       new IconTabFilter({
         key: "jsonToAbap",

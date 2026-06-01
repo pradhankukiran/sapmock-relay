@@ -142,6 +142,48 @@ html, body, #content, .sapUiBody, .sapMText, .sapMTitle, .sapMLabel, .sapMButton
   width: 100% !important;
 }
 
+/* Supplier portal demo workflow */
+.sapmockPortal {
+  padding: 1.5rem !important;
+  gap: 1rem !important;
+}
+
+.sapmockPortalStatus {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  padding: 0.75rem 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.sapmockPortalGrid {
+  display: grid !important;
+  grid-template-columns: 1.2fr 1fr !important;
+  gap: 1.25rem !important;
+  width: 100% !important;
+  align-items: start !important;
+}
+
+.sapmockPortalGrid > .sapFCard:first-child {
+  grid-row: span 2 !important;
+}
+
+.sapmockPortalForm {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 1rem !important;
+}
+
+.sapmockPortalActions {
+  gap: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.sapmockStatusRow {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
+}
+
 /* CodeEditor Border overrides */
 .sapUiCodeEditor {
   border: 1px solid #cbd5e1 !important;
@@ -175,6 +217,12 @@ html, body, #content, .sapUiBody, .sapMText, .sapMTitle, .sapMLabel, .sapMButton
   .sapmockWorkbench {
     grid-template-columns: 1fr !important;
   }
+  .sapmockPortalGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .sapmockPortalGrid > .sapFCard:first-child {
+    grid-row: auto !important;
+  }
 }
 
 @media (max-width: 48rem) {
@@ -182,6 +230,10 @@ html, body, #content, .sapUiBody, .sapMText, .sapMTitle, .sapMLabel, .sapMButton
     grid-template-columns: 1fr !important;
   }
   .sapmockFormGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .sapmockPortalForm,
+  .sapmockStatusRow {
     grid-template-columns: 1fr !important;
   }
 }
