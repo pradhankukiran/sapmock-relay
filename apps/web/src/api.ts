@@ -16,6 +16,8 @@ export interface ContractSpec {
   method: string;
   path: string;
   summary: string;
+  requestSchema?: Record<string, unknown>;
+  responseSchema: Record<string, unknown>;
 }
 
 export interface ScenarioSpec {
@@ -34,6 +36,8 @@ export interface RequestLogEntry {
   contractId?: string;
   scenarioId?: string;
   status: number;
+  requestBody?: unknown;
+  responseBody?: unknown;
 }
 
 export interface VerificationResult {
@@ -49,6 +53,48 @@ async function getJson<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function reloadProject(): Promise<VerificationResult> {
+  const response = await fetch(`${apiBase}/api/reload`, { method: "POST" });
+  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+  const payload = (await response.json()) as { verification: VerificationResult };
+  return payload.verification;
+}
+
+export interface ExecuteRequestInput {
+  method: string;
+  path: string;
+  scenarioId?: string;
+  recordId?: string;
+  body?: string;
+}
+
+export interface ExecuteRequestResult {
+  status: number;
+  headers: Record<string, string>;
+  body: unknown;
+}
+
+export async function executeRelayRequest(input: ExecuteRequestInput): Promise<ExecuteRequestResult> {
+  const url = new URL(`${apiBase}${input.path}`);
+  if (input.scenarioId) url.searchParams.set("scenario", input.scenarioId);
+  if (input.recordId) url.searchParams.set("record", input.recordId);
+
+  const hasBody = !["GET", "DELETE"].includes(input.method) && input.body?.trim();
+  const response = await fetch(url, {
+    method: input.method,
+    headers: hasBody ? { "content-type": "application/json" } : undefined,
+    body: hasBody ? input.body : undefined,
+  });
+  const contentType = response.headers.get("content-type") ?? "";
+  const body = contentType.includes("application/json") ? await response.json() : await response.text();
+
+  return {
+    status: response.status,
+    headers: Object.fromEntries(response.headers.entries()),
+    body,
+  };
+}
+
 export async function loadConsoleData() {
   const [project, contracts, scenarios, requests, verification] = await Promise.all([
     getJson<ProjectSummary>("/api/project"),
@@ -59,4 +105,3 @@ export async function loadConsoleData() {
   ]);
   return { project, contracts, scenarios, requests, verification, apiBase };
 }
-

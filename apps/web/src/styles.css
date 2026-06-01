@@ -30,6 +30,11 @@ button {
   padding-bottom: 18px;
 }
 
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
 .eyebrow {
   color: #587089;
   font-size: 12px;
@@ -121,6 +126,13 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.workspace {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  margin-bottom: 16px;
+}
+
 .panel {
   background: #ffffff;
   border: 1px solid #d9e0e8;
@@ -187,9 +199,129 @@ code {
   min-height: 120px;
 }
 
+.runner {
+  display: grid;
+  gap: 12px;
+}
+
+.runner label {
+  color: #587089;
+  display: grid;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.runnerRow {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+input,
+select,
+textarea {
+  background: #ffffff;
+  border: 1px solid #cbd6e2;
+  border-radius: 6px;
+  color: #192029;
+  font: inherit;
+  min-height: 38px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+textarea {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  min-height: 118px;
+  resize: vertical;
+  text-transform: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.primaryButton,
+.linkButton {
+  align-items: center;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 12px;
+  text-decoration: none;
+}
+
+.primaryButton {
+  background: #1f6f4a;
+  border: 1px solid #1f6f4a;
+  color: #ffffff;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.linkButton {
+  background: #ffffff;
+  border: 1px solid #cbd6e2;
+  color: #192029;
+}
+
+.inlineError {
+  background: #fff6f6;
+  border: 1px solid #d96060;
+  border-radius: 6px;
+  color: #9d1f1f;
+  padding: 10px;
+}
+
+.responseBox {
+  border: 1px solid #d9e0e8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.responseHeader {
+  align-items: center;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d9e0e8;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+}
+
+.statusGood {
+  color: #21623a;
+}
+
+.statusBad {
+  color: #9d1f1f;
+}
+
+pre {
+  background: #111820;
+  color: #dce7f1;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  margin: 0;
+  max-height: 340px;
+  overflow: auto;
+  padding: 12px;
+}
+
 @media (max-width: 900px) {
   .summary,
-  .grid {
+  .grid,
+  .workspace,
+  .runnerRow {
     grid-template-columns: 1fr;
   }
 
@@ -197,4 +329,3 @@ code {
     padding: 16px;
   }
 }
-
