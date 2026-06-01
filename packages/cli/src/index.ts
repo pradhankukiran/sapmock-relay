@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { abapTestDoubleCommand, initProject, replayCommand, serveCommand, verifyCommand } from "./actions.js";
+import { abapTestDoubleCommand, initProject, openApiCommand, replayCommand, serveCommand, verifyCommand } from "./actions.js";
 
 const program = new Command();
 
@@ -45,6 +45,15 @@ program
   });
 
 program
+  .command("openapi")
+  .argument("<projectDir>", "SAPMock project directory")
+  .option("-o, --out <file>", "write OpenAPI JSON to file")
+  .description("export contracts as OpenAPI 3.1")
+  .action(async (projectDir, options: { out?: string }) => {
+    process.exitCode = await openApiCommand(projectDir, options.out);
+  });
+
+program
   .command("abap-testdouble")
   .requiredOption("-o, --out <file>", "output ABAP class file")
   .option("-c, --class-name <name>", "ABAP class name", "zcl_sapmock_bapi_return")
@@ -54,4 +63,3 @@ program
   });
 
 await program.parseAsync();
-

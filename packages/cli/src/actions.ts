@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { createServer } from "@sapmock/api";
-import { buildRelayResponse, loadProject, matchContract, pickScenario, verifyProject } from "@sapmock/core";
+import { buildOpenApi, buildRelayResponse, loadProject, matchContract, pickScenario, verifyProject } from "@sapmock/core";
 import {
   abapHelperTemplate,
   configTemplate,
@@ -64,10 +64,20 @@ export async function serveCommand(projectDir: string, port: number): Promise<vo
   await app.listen({ port, host: "0.0.0.0" });
 }
 
+export async function openApiCommand(projectDir: string, outFile?: string): Promise<number> {
+  const project = await loadProject(resolve(projectDir));
+  const document = JSON.stringify(buildOpenApi(project), null, 2);
+  if (outFile) {
+    await writeFile(resolve(outFile), `${document}\n`, "utf8");
+  } else {
+    console.log(document);
+  }
+  return 0;
+}
+
 export async function abapTestDoubleCommand(outFile: string, className: string): Promise<string> {
   const out = resolve(outFile);
   await mkdir(resolve(out, ".."), { recursive: true });
   await writeFile(out, abapHelperTemplate(className), "utf8");
   return out;
 }
-

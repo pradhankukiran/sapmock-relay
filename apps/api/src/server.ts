@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import cors from "@fastify/cors";
 import {
+  buildOpenApi,
   buildRelayResponse,
   validateRequestBody,
   loadProject,
@@ -46,6 +47,7 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
   app.get("/api/scenarios", async () => project.scenarios);
   app.get("/api/requests", async () => requestStore.recent(100));
   app.get("/api/verify", async () => verifyProject(project));
+  app.get("/api/openapi.json", async () => buildOpenApi(project));
   app.addHook("onClose", async () => requestStore.close());
 
   app.route({

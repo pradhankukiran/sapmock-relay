@@ -116,6 +116,15 @@ describe("API relay", () => {
     });
   });
 
+  it("exports OpenAPI for configured contracts", async () => {
+    const response = await app.inject({ method: "GET", url: "/api/openapi.json" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      openapi: "3.1.0",
+      paths: { "/qm/notifications/{id}": expect.any(Object) },
+    });
+  });
+
   it("validates request bodies before serving scenarios", async () => {
     const response = await app.inject({ method: "POST", url: "/qm/notifications", payload: {} });
     expect(response.statusCode).toBe(400);
