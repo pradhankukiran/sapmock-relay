@@ -1,0 +1,115 @@
+import { randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
+import cors from "@fastify/cors";
+import {
+  buildRelayResponse,
+  loadProject,
+  matchContract,
+  pickScenario,
+  verifyProject,
+  type LoadedProject,
+} from "@sapmock/core";
+import Fastify, { type FastifyInstance } from "fastify";
+
+export interface RequestLogEntry {
+  id: string;
+  at: string;
+  method: string;
+  path: string;
+  contractId?: string;
+  scenarioId?: string;
+  status: number;
+}
+
+export interface CreateServerOptions {
+  projectDir: string;
+  logger?: boolean;
+}
+
+export async function createServer(options: CreateServerOptions): Promise<FastifyInstance> {
+  const app = Fastify({ logger: options.logger ?? true });
+  const requestLog: RequestLogEntry[] = [];
+  let project: LoadedProject = await loadProject(options.projectDir);
+
+  await app.register(cors, { origin: true });
+
+  app.get("/health", async () => ({ ok: true, service: "sapmock-relay" }));
+
+  app.post("/api/reload", async () => {
+    project = await loadProject(options.projectDir);
+    const verification = verifyProject(project);
+    return { ok: verification.ok, verification };
+  });
+
+  app.get("/api/project", async () => ({
+    config: project.config,
+    contractCount: project.contracts.length,
+    scenarioCount: project.scenarios.length,
+  }));
+
+  app.get("/api/contracts", async () => project.contracts);
+  app.get("/api/scenarios", async () => project.scenarios);
+  app.get("/api/requests", async () => requestLog.slice(-100).reverse());
+  app.get("/api/verify", async () => verifyProject(project));
+
+  app.route({
+    method: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    url: "/*",
+    handler: async (request, reply) => {
+    const url = new URL(request.url, "http://localhost");
+    const route = matchContract(project.contracts, request.method, url.pathname);
+
+    if (!route) {
+      requestLog.push(logEntry(request.method, url.pathname, 404));
+      return reply.code(404).send({
+        error: "NO_CONTRACT_MATCH",
+        message: `${request.method} ${url.pathname} does not match any SAPMock contract`,
+      });
+    }
+
+    const scenarioId = url.searchParams.get("scenario") ?? request.headers["x-sapmock-scenario"]?.toString();
+    const scenario = pickScenario(project, route.contract, scenarioId);
+
+    if (!scenario) {
+      requestLog.push(logEntry(request.method, url.pathname, 404, route.contract.id));
+      return reply.code(404).send({
+        error: "NO_SCENARIO_MATCH",
+        contractId: route.contract.id,
+        message: `No scenario available for contract ${route.contract.id}`,
+      });
+    }
+
+    const relayResponse = buildRelayResponse(route.contract, scenario);
+    if (relayResponse.delayMs > 0) {
+      await delay(relayResponse.delayMs);
+    }
+
+    for (const [key, value] of Object.entries(relayResponse.headers)) {
+      reply.header(key, value);
+    }
+
+    requestLog.push(logEntry(request.method, url.pathname, relayResponse.status, route.contract.id, scenario.id));
+    return reply.code(relayResponse.status).send(relayResponse.body);
+    },
+  });
+
+  return app;
+}
+
+function logEntry(
+  method: string,
+  path: string,
+  status: number,
+  contractId?: string,
+  scenarioId?: string,
+): RequestLogEntry {
+  return {
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    method,
+    path,
+    contractId,
+    scenarioId,
+    status,
+  };
+}
