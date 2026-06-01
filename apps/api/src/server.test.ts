@@ -1,4 +1,5 @@
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { createServer as createHttpServer, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -76,6 +77,7 @@ async function fixtureProject(): Promise<string> {
 
 describe("API relay", () => {
   let app: Awaited<ReturnType<typeof createServer>>;
+  let target: Server | undefined;
 
   beforeEach(async () => {
     app = await createServer({ projectDir: await fixtureProject(), logger: false });
@@ -83,6 +85,10 @@ describe("API relay", () => {
 
   afterEach(async () => {
     if (app) await app.close();
+    if (target) {
+      await new Promise<void>((resolve) => target?.close(() => resolve()));
+      target = undefined;
+    }
   });
 
   it("serves contract scenario responses", async () => {
@@ -115,4 +121,39 @@ describe("API relay", () => {
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ error: "REQUEST_SCHEMA_VALIDATION_FAILED", contractId: "qm-create" });
   });
+
+  it("records proxied target responses as scenarios", async () => {
+    const projectDir = await fixtureProject();
+    const targetBaseUrl = await startTarget();
+    await app.close();
+    app = await createServer({ projectDir, recordTarget: targetBaseUrl, logger: false });
+
+    const response = await app.inject({ method: "GET", url: "/qm/notifications/1001?record=target-qm" });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["x-sapmock-recorded-scenario"]).toBe("target-qm");
+    expect(response.json()).toEqual({ notificationId: "from-target" });
+
+    const scenarios = await app.inject({ method: "GET", url: "/api/scenarios" });
+    expect(scenarios.json()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: "target-qm", contractId: "qm-read" })]),
+    );
+  });
+
+  async function startTarget(): Promise<string> {
+    target = createHttpServer((request, response) => {
+      if (request.url?.startsWith("/qm/notifications/1001")) {
+        response.setHeader("content-type", "application/json");
+        response.end(JSON.stringify({ notificationId: "from-target" }));
+        return;
+      }
+
+      response.statusCode = 404;
+      response.end("missing");
+    });
+
+    await new Promise<void>((resolve) => target?.listen(0, "127.0.0.1", () => resolve()));
+    const address = target.address();
+    if (!address || typeof address === "string") throw new Error("No target port");
+    return `http://127.0.0.1:${address.port}`;
+  }
 });

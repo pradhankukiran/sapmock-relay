@@ -6,7 +6,7 @@ const projectDir = process.env.SAPMOCK_PROJECT ? resolveProjectDir(process.env.S
 const port = Number(process.env.PORT ?? 4000);
 const host = process.env.HOST ?? "0.0.0.0";
 
-const app = await createServer({ projectDir });
+const app = await createServer({ projectDir, recordTarget: process.env.SAPMOCK_RECORD_TARGET });
 
 await app.listen({ port, host });
 
