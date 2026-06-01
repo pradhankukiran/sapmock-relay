@@ -37,12 +37,15 @@ export function verifyProject(project: LoadedProject): VerificationResult {
   for (const contract of project.contracts) {
     let validateResponse: ReturnType<typeof ajv.compile>;
     try {
+      if (contract.requestSchema) {
+        ajv.compile(contract.requestSchema);
+      }
       validateResponse = ajv.compile(contract.responseSchema);
     } catch (error) {
       issues.push({
         level: "error",
         contractId: contract.id,
-        message: `Invalid response schema: ${(error as Error).message}`,
+        message: `Invalid schema: ${(error as Error).message}`,
       });
       continue;
     }

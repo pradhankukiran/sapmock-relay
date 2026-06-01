@@ -3,6 +3,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import cors from "@fastify/cors";
 import {
   buildRelayResponse,
+  validateRequestBody,
   loadProject,
   matchContract,
   pickScenario,
@@ -68,6 +69,16 @@ export async function createServer(options: CreateServerOptions): Promise<Fastif
     }
 
     const scenarioId = url.searchParams.get("scenario") ?? request.headers["x-sapmock-scenario"]?.toString();
+    const validation = validateRequestBody(route.contract, request.body);
+    if (!validation.ok) {
+      requestLog.push(logEntry(request.method, url.pathname, 400, route.contract.id));
+      return reply.code(400).send({
+        error: "REQUEST_SCHEMA_VALIDATION_FAILED",
+        contractId: route.contract.id,
+        issues: validation.errors,
+      });
+    }
+
     const scenario = pickScenario(project, route.contract, scenarioId);
 
     if (!scenario) {

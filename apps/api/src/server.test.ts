@@ -32,6 +32,26 @@ async function fixtureProject(): Promise<string> {
     }),
   );
   await writeFile(
+    join(root, "contracts", "qm-create.json"),
+    JSON.stringify({
+      id: "qm-create",
+      system: "QM",
+      method: "POST",
+      path: "/qm/notifications",
+      summary: "Create notification",
+      requestSchema: {
+        type: "object",
+        required: ["defectCode"],
+        properties: { defectCode: { type: "string" } },
+      },
+      responseSchema: {
+        type: "object",
+        required: ["notificationId"],
+        properties: { notificationId: { type: "string" } },
+      },
+    }),
+  );
+  await writeFile(
     join(root, "scenarios", "qm.json"),
     JSON.stringify({
       id: "happy",
@@ -39,6 +59,16 @@ async function fixtureProject(): Promise<string> {
       name: "Happy path",
       status: 200,
       response: { notificationId: "1001" },
+    }),
+  );
+  await writeFile(
+    join(root, "scenarios", "qm-create.json"),
+    JSON.stringify({
+      id: "happy",
+      contractId: "qm-create",
+      name: "Created",
+      status: 201,
+      response: { notificationId: "1002" },
     }),
   );
   return root;
@@ -66,5 +96,11 @@ describe("API relay", () => {
     const response = await app.inject({ method: "GET", url: "/missing" });
     expect(response.statusCode).toBe(404);
     expect(response.json()).toMatchObject({ error: "NO_CONTRACT_MATCH" });
+  });
+
+  it("validates request bodies before serving scenarios", async () => {
+    const response = await app.inject({ method: "POST", url: "/qm/notifications", payload: {} });
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ error: "REQUEST_SCHEMA_VALIDATION_FAILED", contractId: "qm-create" });
   });
 });

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { LoadedProject } from "./types.js";
 import { matchContract } from "./match.js";
+import { buildOpenApi } from "./openapi.js";
+import { validateRequestBody } from "./schema.js";
 import { verifyProject } from "./verify.js";
 
 const project: LoadedProject = {
@@ -49,5 +51,16 @@ describe("core verifier", () => {
       contract: { id: "qm-notification-read" },
     });
   });
-});
 
+  it("validates request schemas when present", () => {
+    const contract = { ...project.contracts[0], requestSchema: { type: "object", required: ["id"] } };
+    expect(validateRequestBody(contract, {})).toMatchObject({ ok: false });
+    expect(validateRequestBody(contract, { id: "1001" })).toMatchObject({ ok: true });
+  });
+
+  it("exports OpenAPI paths from contracts", () => {
+    const doc = buildOpenApi(project);
+    expect(doc.openapi).toBe("3.1.0");
+    expect(doc.paths["/qm/notifications/{id}"]).toBeDefined();
+  });
+});
