@@ -30,7 +30,7 @@ Open:
 
 - API: `http://localhost:4000/health`
 - Relay sample: `http://localhost:4000/qm/notifications/10000042`
-- Failure sample: `http://localhost:4000/qm/notifications/10000042/responses?scenario=bapi-error`
+- Failure sample: `http://localhost:4000/qm/notifications/10000042?scenario=bapi-error`
 - Console: `http://localhost:5173`
 
 ## Shape
@@ -77,4 +77,3 @@ pnpm cli abap-testdouble --out tmp/zcl_sapmock_bapi_return.clas.abap
 - `zcl_sapmock_http_client_double`: in-memory response double
 - `zcl_sapmock_bapi_return`: BAPIRET-style success/error builder
 - `zcl_sapmock_contract_assert`: JSON substring assertion helper
-

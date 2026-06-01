@@ -1,6 +1,20 @@
 [
   {
     "id": "bapi-error",
+    "contractId": "qm-notification-read",
+    "name": "Quality notification locked",
+    "status": 423,
+    "response": {
+      "notificationId": "10000042",
+      "supplier": "ACME_COMPONENTS",
+      "defectCode": "PACKAGING_DAMAGED",
+      "severity": "MAJOR",
+      "status": "LOCKED",
+      "requiredAction": "Retry after backend lock clears"
+    }
+  },
+  {
+    "id": "bapi-error",
     "contractId": "mm-po-confirm",
     "name": "Quantity exceeds open PO quantity",
     "status": 422,
@@ -53,4 +67,3 @@
     }
   }
 ]
-
