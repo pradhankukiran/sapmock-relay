@@ -12,6 +12,11 @@ SAPMock Relay gives teams:
 - OpenAPI 3.1 export
 - ABAP Unit helper generation for API wrapper tests
 - deployable API server for Railway and SAPUI5/OpenUI5 Fiori-style console for Vercel
+- built-in interactive Fiori Horizon-themed integration utilities:
+  - **JSON-to-ABAP Generator:** Auto-maps JSON payloads directly to recursive ABAP structure declarations (`TYPES: BEGIN OF...`) and `/UI2/CL_JSON=>deserialize` parsing blocks.
+  - **SnapLogic Mapper:** Generates property mapping expression blocks linking REST fields to standard BAPI fields.
+  - **Launchpad Tile Designer:** Target mapping configuration editor with a real-time responsive Fiori Dynamic/Static Tile previewer and configuration JSON exports.
+  - **OpenAPI Schema Explorer:** Interactive schema inspection with a one-click route loader that loads configurations directly into the Request Runner.
 
 ## Quick Start
 
