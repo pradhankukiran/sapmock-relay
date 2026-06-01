@@ -1,0 +1,25 @@
+{
+  "id": "ewm-delivery-status",
+  "system": "EWM",
+  "method": "GET",
+  "path": "/ewm/deliveries/:deliveryNumber/status",
+  "summary": "Read inbound delivery and goods receipt status",
+  "responseSchema": {
+    "type": "object",
+    "required": ["deliveryNumber", "poNumber", "status", "goodsReceipt"],
+    "properties": {
+      "deliveryNumber": { "type": "string" },
+      "poNumber": { "type": "string" },
+      "status": { "type": "string" },
+      "goodsReceipt": {
+        "type": "object",
+        "required": ["posted", "documentNumber"],
+        "properties": {
+          "posted": { "type": "boolean" },
+          "documentNumber": { "type": "string" }
+        }
+      }
+    }
+  }
+}
+

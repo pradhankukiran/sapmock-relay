@@ -1,0 +1,23 @@
+{
+  "name": "supplier-portal",
+  "version": "1.0.0",
+  "defaultScenario": "happy-path",
+  "systems": [
+    {
+      "id": "MM",
+      "label": "Materials Management",
+      "basePath": "/mm"
+    },
+    {
+      "id": "QM",
+      "label": "Quality Management",
+      "basePath": "/qm"
+    },
+    {
+      "id": "EWM",
+      "label": "Warehouse and Delivery",
+      "basePath": "/ewm"
+    }
+  ]
+}
+

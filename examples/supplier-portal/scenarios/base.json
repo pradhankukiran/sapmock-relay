@@ -1,0 +1,91 @@
+[
+  {
+    "id": "happy-path",
+    "contractId": "mm-po-read",
+    "name": "Open supplier purchase order",
+    "status": 200,
+    "response": {
+      "poNumber": "4500001234",
+      "supplier": "ACME_COMPONENTS",
+      "buyer": "POWER_GRID_DE",
+      "status": "OPEN",
+      "items": [
+        {
+          "item": "00010",
+          "material": "TURBINE-BOLT-M16",
+          "description": "High tensile bolt M16",
+          "openQuantity": 120,
+          "uom": "EA",
+          "requestedDate": "2026-06-15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "happy-path",
+    "contractId": "mm-po-confirm",
+    "name": "PO confirmation accepted",
+    "status": 201,
+    "response": {
+      "confirmationId": "CNF-900001",
+      "poNumber": "4500001234",
+      "status": "ACCEPTED",
+      "bapiReturn": [
+        {
+          "type": "S",
+          "id": "ME",
+          "number": "000",
+          "message": "Confirmation accepted"
+        }
+      ]
+    }
+  },
+  {
+    "id": "happy-path",
+    "contractId": "qm-notification-read",
+    "name": "Open quality notification",
+    "status": 200,
+    "response": {
+      "notificationId": "10000042",
+      "supplier": "ACME_COMPONENTS",
+      "defectCode": "PACKAGING_DAMAGED",
+      "severity": "MAJOR",
+      "status": "OPEN",
+      "requiredAction": "Submit 8D root cause and corrective action"
+    }
+  },
+  {
+    "id": "happy-path",
+    "contractId": "qm-notification-response",
+    "name": "Quality response accepted",
+    "status": 201,
+    "response": {
+      "notificationId": "10000042",
+      "status": "SUPPLIER_RESPONSE_SUBMITTED",
+      "bapiReturn": [
+        {
+          "type": "S",
+          "id": "QM",
+          "number": "000",
+          "message": "Response saved"
+        }
+      ]
+    }
+  },
+  {
+    "id": "happy-path",
+    "contractId": "ewm-delivery-status",
+    "name": "Delivery in transit",
+    "status": 200,
+    "response": {
+      "deliveryNumber": "1800007777",
+      "poNumber": "4500001234",
+      "status": "IN_TRANSIT",
+      "goodsReceipt": {
+        "posted": false,
+        "documentNumber": ""
+      }
+    }
+  }
+]
+

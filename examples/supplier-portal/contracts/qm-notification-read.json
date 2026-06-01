@@ -1,0 +1,20 @@
+{
+  "id": "qm-notification-read",
+  "system": "QM",
+  "method": "GET",
+  "path": "/qm/notifications/:notificationId",
+  "summary": "Read supplier quality notification",
+  "responseSchema": {
+    "type": "object",
+    "required": ["notificationId", "supplier", "defectCode", "severity", "status", "requiredAction"],
+    "properties": {
+      "notificationId": { "type": "string" },
+      "supplier": { "type": "string" },
+      "defectCode": { "type": "string" },
+      "severity": { "type": "string" },
+      "status": { "type": "string" },
+      "requiredAction": { "type": "string" }
+    }
+  }
+}
+

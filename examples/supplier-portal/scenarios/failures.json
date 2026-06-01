@@ -1,0 +1,56 @@
+[
+  {
+    "id": "bapi-error",
+    "contractId": "mm-po-confirm",
+    "name": "Quantity exceeds open PO quantity",
+    "status": 422,
+    "response": {
+      "confirmationId": "",
+      "poNumber": "4500001234",
+      "status": "REJECTED",
+      "bapiReturn": [
+        {
+          "type": "E",
+          "id": "ME",
+          "number": "083",
+          "message": "Confirmed quantity exceeds open quantity"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bapi-error",
+    "contractId": "qm-notification-response",
+    "name": "Notification locked in backend",
+    "status": 423,
+    "response": {
+      "notificationId": "10000042",
+      "status": "LOCKED",
+      "bapiReturn": [
+        {
+          "type": "E",
+          "id": "QM",
+          "number": "311",
+          "message": "Notification locked by another user"
+        }
+      ]
+    }
+  },
+  {
+    "id": "slow-system",
+    "contractId": "ewm-delivery-status",
+    "name": "Slow EWM status response",
+    "status": 200,
+    "delayMs": 1500,
+    "response": {
+      "deliveryNumber": "1800007777",
+      "poNumber": "4500001234",
+      "status": "DELAYED",
+      "goodsReceipt": {
+        "posted": false,
+        "documentNumber": ""
+      }
+    }
+  }
+]
+

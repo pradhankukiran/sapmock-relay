@@ -1,0 +1,33 @@
+{
+  "id": "mm-po-read",
+  "system": "MM",
+  "method": "GET",
+  "path": "/mm/purchase-orders/:poNumber",
+  "summary": "Read PO header and open supplier lines",
+  "responseSchema": {
+    "type": "object",
+    "required": ["poNumber", "supplier", "buyer", "status", "items"],
+    "properties": {
+      "poNumber": { "type": "string" },
+      "supplier": { "type": "string" },
+      "buyer": { "type": "string" },
+      "status": { "type": "string" },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["item", "material", "description", "openQuantity", "uom", "requestedDate"],
+          "properties": {
+            "item": { "type": "string" },
+            "material": { "type": "string" },
+            "description": { "type": "string" },
+            "openQuantity": { "type": "number" },
+            "uom": { "type": "string" },
+            "requestedDate": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+

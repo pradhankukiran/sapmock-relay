@@ -1,0 +1,40 @@
+{
+  "id": "mm-po-confirm",
+  "system": "MM",
+  "method": "POST",
+  "path": "/mm/purchase-orders/:poNumber/confirmations",
+  "summary": "Submit supplier confirmation against PO line",
+  "requestSchema": {
+    "type": "object",
+    "required": ["item", "confirmedQuantity", "confirmedDate"],
+    "properties": {
+      "item": { "type": "string" },
+      "confirmedQuantity": { "type": "number" },
+      "confirmedDate": { "type": "string" },
+      "supplierComment": { "type": "string" }
+    }
+  },
+  "responseSchema": {
+    "type": "object",
+    "required": ["confirmationId", "poNumber", "status", "bapiReturn"],
+    "properties": {
+      "confirmationId": { "type": "string" },
+      "poNumber": { "type": "string" },
+      "status": { "type": "string" },
+      "bapiReturn": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["type", "message"],
+          "properties": {
+            "type": { "type": "string" },
+            "id": { "type": "string" },
+            "number": { "type": "string" },
+            "message": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+
