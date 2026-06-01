@@ -1,6 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { createServer } from "@sapmock/api";
 import { buildOpenApi, buildRelayResponse, loadProject, matchContract, pickScenario, verifyProject } from "@sapmock/core";
 import {
   abapHelperTemplate,
@@ -61,6 +60,7 @@ export async function replayCommand(
 }
 
 export async function serveCommand(projectDir: string, port: number, recordTarget?: string): Promise<void> {
+  const { createServer } = await import("@sapmock/api");
   const app = await createServer({ projectDir: resolve(projectDir), recordTarget });
   await app.listen({ port, host: "0.0.0.0" });
 }
