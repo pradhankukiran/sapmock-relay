@@ -20,7 +20,7 @@ Health check:
 
 ## Vercel Console
 
-Vercel builds `apps/web`.
+Vercel builds `apps/web`, an OpenUI5/SAPUI5 console using the `sap_horizon` theme.
 
 Required env:
 

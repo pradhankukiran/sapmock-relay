@@ -11,7 +11,7 @@ SAPMock Relay gives teams:
 - proxy record mode for saving real API responses as reusable scenarios
 - OpenAPI 3.1 export
 - ABAP Unit helper generation for API wrapper tests
-- deployable API server for Railway and web console for Vercel
+- deployable API server for Railway and SAPUI5/OpenUI5 Fiori-style console for Vercel
 
 ## Quick Start
 
@@ -66,6 +66,8 @@ vercel
 ```
 
 Set `VITE_API_BASE_URL` in Vercel to the Railway API URL.
+
+The web console is built with OpenUI5/SAPUI5 controls using the `sap_horizon` theme.
 
 ## CLI
 
